@@ -52,3 +52,27 @@ input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+.containerButton {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+button {
+    width: 48%; /* Adjust width for spacing between the buttons */
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.saveButton {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.cancelButton {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
