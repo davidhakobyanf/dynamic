@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="https://org38d80590.crm4.dynamics.com//WebResources/cr651_css_inventory_products_popup">
     <link rel="stylesheet" href="index.css">
     <title>Inventory Product Management</title>
+    <style>
+        /* Add some basic styles for the disabled button */
+        .saveButton:disabled {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+    </style>
     <script>
         let cleanInventoryId;
         let selectedProductId;
@@ -39,6 +46,9 @@
             let ProductResults = await parent.Xrm.WebApi.retrieveMultipleRecords('cr651_products', encodedFetchXml);
             let productsDropDown = document.getElementById('products');
 
+            // Add default option
+            productsDropDown.options[productsDropDown.options.length] = new Option("Select a product", "", true, true);
+
             if (ProductResults.entities.length > 0) {
                 for (let i = 0; i < ProductResults.entities.length; i++) {
                     let product = ProductResults.entities[i];
@@ -48,16 +58,39 @@
                 console.log("No records found.");
             }
 
+            // Disable the Save button initially
+            const saveButton = document.querySelector('.saveButton');
+            saveButton.disabled = true;
+
+            // Get the quantity input field
+            const quantityInput = document.getElementById('quantity');
+
+            // Function to check if Save button should be enabled
+            function checkEnableSaveButton() {
+                const quantityValue = quantityInput.value;
+                if (selectedProductId && quantityValue && parseInt(quantityValue) > 0) {
+                    saveButton.disabled = false;
+                } else {
+                    saveButton.disabled = true;
+                }
+            }
+
             // Listen for product selection change
             productsDropDown.addEventListener('change', function () {
                 selectedProductId = productsDropDown.value;
                 console.log("Selected Product ID:", selectedProductId);
+                checkEnableSaveButton();  // Check whether Save should be enabled
+            });
+
+            // Listen for quantity input change
+            quantityInput.addEventListener('input', function () {
+                checkEnableSaveButton();  // Check whether Save should be enabled
             });
 
             // Add event listener to Save button
-            document.querySelector('.saveButton').addEventListener('click', async function () {
+            saveButton.addEventListener('click', async function () {
                 let operation = document.getElementById('operations').value;
-                let quantityInput = parseInt(document.getElementById('quantity').value);
+                let quantity = parseInt(quantityInput.value);
 
                 if (!selectedProductId || !cleanInventoryId) {
                     console.error("Product ID or Inventory ID is missing.");
@@ -65,26 +98,24 @@
                     return;
                 }
 
-                // Получаем информацию о количестве и проверяем, существует ли продукт в инвентаре
+                // Fetch current quantity and check if product exists in the inventory
                 let { currentQuantity, isProductExists } = await getInventoryQuantity(selectedProductId, cleanInventoryId);
 
-                // Если продукт не найден в инвентаре и выбрана операция "In"
                 if (!isProductExists && operation === 'in') {
-                    let pricePerUnit = 1;  // Укажите нужную цену за единицу
-                    await createInventoryProduct(selectedProductId, cleanInventoryId, quantityInput, pricePerUnit);
+                    let pricePerUnit = 1;  // Specify unit price
+                    await createInventoryProduct(selectedProductId, cleanInventoryId, quantity, pricePerUnit);
                 } else if (!isProductExists && operation === 'out') {
                     showErrorMessage("Error: Product not found in the inventory.");
                     return;
                 } else {
-                    // Логика обновления количества
                     if (operation === 'in') {
-                        currentQuantity += quantityInput;
+                        currentQuantity += quantity;
                     } else if (operation === 'out') {
-                        if (quantityInput > currentQuantity) {
+                        if (quantity > currentQuantity) {
                             showErrorMessage("Error: Not enough quantity available.");
                             return;
                         } else {
-                            currentQuantity -= quantityInput;
+                            currentQuantity -= quantity;
                         }
                     }
 
@@ -228,9 +259,8 @@
 <input type="number" name="quantity" id="quantity">
 
 <div class="containerButton">
-    <button class="saveButton">Save</button>
+    <button class="saveButton" disabled>Save</button>
     <button class="cancelButton">Cancel</button>
-
 </div>
 </body>
 </html>
