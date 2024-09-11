@@ -1,5 +1,4 @@
-function testFunction(executionContext)
-{
+function testFunction(executionContext) {
     let formContext = executionContext.getFormContext();
     let lookupValue = formContext.getAttribute('cr651_fk_product').getValue();
     if (lookupValue != null && lookupValue[0] != null) {
@@ -7,6 +6,7 @@ function testFunction(executionContext)
         formContext.getAttribute('cr651_name').setValue(productName);
     }
 }
+
 function togglePricePerUnitVisibility(executionContext) {
     let formContext = executionContext.getFormContext();
     let typeValues = formContext.getAttribute('cr651_os_type').getValue();
@@ -17,6 +17,7 @@ function togglePricePerUnitVisibility(executionContext) {
         pricePerUnitControl.setVisible(false);
     }
 }
+
 function calculateTotalAmount(executionContext) {
     let formContext = executionContext.getFormContext();
     let quantity = formContext.getAttribute('cr651_int_quantity').getValue();
@@ -29,6 +30,7 @@ function calculateTotalAmount(executionContext) {
     formContext.getAttribute('cr651_mon_total_amount').setValue(totalAmount);
     formContext.getControl('cr651_mon_total_amount').setDisabled(true);
 }
+
 function toggleFieldsBasedOnFormType(executionContext) {
     let formContext = executionContext.getFormContext();
     let formType = formContext.ui.getFormType();
@@ -37,13 +39,13 @@ function toggleFieldsBasedOnFormType(executionContext) {
         controls.forEach(function (control) {
             control.setDisabled(true);
         });
-    }
-    else if (formType === 1) {
+    } else if (formType === 1) {
         controls.forEach(function (control) {
             control.setDisabled(false);
         });
     }
 }
+
 async function onLoadCurrency(executionContext) {
     let formContext = executionContext.getFormContext();
     let lookupValue = formContext.getAttribute('cr651_fk_inventory').getValue();
@@ -76,11 +78,11 @@ async function onLoadCurrency(executionContext) {
             let encodedFetchXml = "?fetchXml=" + encodeURIComponent(fetchXml);
             let inventoryResults = await Xrm.WebApi.retrieveMultipleRecords('cr651_inventory', encodedFetchXml);
             if (inventoryResults.entities.length > 0) {
-                let transactionCurrencyId  = [
+                let transactionCurrencyId = [
                     {
                         id: inventoryResults.entities[0][`aa.transactioncurrencyid`],
-                        name:inventoryResults.entities[0][`aa.transactioncurrencyid@OData.Community.Display.V1.FormattedValue`],
-                        entityType:inventoryResults.entities[0][`aa.transactioncurrencyid@Microsoft.Dynamics.CRM.lookuplogicalname`],
+                        name: inventoryResults.entities[0][`aa.transactioncurrencyid@OData.Community.Display.V1.FormattedValue`],
+                        entityType: inventoryResults.entities[0][`aa.transactioncurrencyid@Microsoft.Dynamics.CRM.lookuplogicalname`],
                     }
                 ];
 
@@ -88,15 +90,14 @@ async function onLoadCurrency(executionContext) {
             } else {
                 alert("Currency ID not found in any Price List.");
             }
-        }
-        catch
-            (error)
-        {
+        } catch
+            (error) {
             alert("Error retrieving records: " + error.message);
             console.error(error);
         }
     }
 }
+
 async function onLoadPricePerUnit(executionContext) {
     let formContext = executionContext.getFormContext();
     let lookupValue = formContext.getAttribute('cr651_fk_product').getValue();
@@ -171,6 +172,7 @@ async function onLoadPricePerUnit(executionContext) {
         }
     }
 }
+
 async function onLoadPriceList(executionContext) {
     let formContext = executionContext.getFormContext();
     let lookupValue = formContext.getAttribute('cr651_fk_price_list').getValue();
@@ -203,11 +205,11 @@ async function onLoadPriceList(executionContext) {
             let inventoryResults = await Xrm.WebApi.retrieveMultipleRecords('cr651_pricelist', encodedFetchXml);
 
             if (inventoryResults.entities.length > 0) {
-                let transactionCurrencyId  = [
+                let transactionCurrencyId = [
                     {
                         id: inventoryResults.entities[0][`_transactioncurrencyid_value`],
-                        name:inventoryResults.entities[0][`_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue`],
-                        entityType:inventoryResults.entities[0][`_transactioncurrencyid_value@Microsoft.Dynamics.CRM.lookuplogicalname`],
+                        name: inventoryResults.entities[0][`_transactioncurrencyid_value@OData.Community.Display.V1.FormattedValue`],
+                        entityType: inventoryResults.entities[0][`_transactioncurrencyid_value@Microsoft.Dynamics.CRM.lookuplogicalname`],
                     }
                 ];
 
@@ -215,10 +217,8 @@ async function onLoadPriceList(executionContext) {
             } else {
                 alert("Currency ID not found in any Price List.");
             }
-        }
-        catch
-            (error)
-        {
+        } catch
+            (error) {
             alert("Error retrieving records: " + error.message);
             console.error(error);
         }
@@ -285,6 +285,7 @@ async function onCheckProduct(executionContext) {
         }
     }
 }
+
 async function deleteRecordPriceList(formContext) {
     if (formContext) {
         let recordId = formContext.data.entity.getId();
@@ -418,3 +419,20 @@ async function deleteRecordPriceList(formContext) {
         }
     }
 }
+
+
+function checkCostChane(executionContext) {
+    let formContext = executionContext.getFormContext();
+    let cost = formContext.getAttribute('cr651_mon_cost').getValue();
+    let pricePerUnit = formContext.getAttribute('cr651_mon_default_price_per_unit').getValue();
+    console.log(cost,'cost')
+    console.log(pricePerUnit,'pricePerUnit')
+    let fieldSchemaName = "cr651_mon_cost"; // Replace this with the actual field schema name
+
+    if (cost > pricePerUnit) {
+        formContext.getControl(fieldSchemaName).setNotification("Warning cost > pricePerUnit", 2);
+    } else {
+        formContext.getControl(fieldSchemaName).clearNotification(2);
+    }
+}
+
