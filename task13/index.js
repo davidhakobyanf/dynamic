@@ -157,7 +157,6 @@ async function onLoadPricePerUnit(executionContext) {
 
 
 async function onSumTotalAmountProduct(formContext) {
-
     try {
         // Attempt to retrieve Price Per Unit from cr651_price_list_item
         let fetchXml = `
@@ -169,9 +168,8 @@ async function onSumTotalAmountProduct(formContext) {
             `;
         let encodedFetchXml = "?fetchXml=" + encodeURIComponent(fetchXml);
         let result = await Xrm.WebApi.retrieveMultipleRecords('cr651_workorderproduct', encodedFetchXml);
-        console.log(JSON.stringify(result))
-        let data = JSON.stringify(result)
-        const totalAmountSum = data.entities[0]['cr651_mon_total_amount_sum'];
+        console.log(result,'result')
+        const totalAmountSum = result.entities[0]['cr651_mon_total_amount_sum'];
         console.log(totalAmountSum, 'totalAmountSum')
         if (totalAmountSum != null) {
             formContext.getAttribute('cr651_mon_total_products_amount').setValue(totalAmountSum);
@@ -196,9 +194,7 @@ async function onSumTotalAmountService(formContext) {
             `;
         let encodedFetchXml = "?fetchXml=" + encodeURIComponent(fetchXml);
         let result = await Xrm.WebApi.retrieveMultipleRecords('cr651_workorderservices', encodedFetchXml);
-        console.log(JSON.stringify(result))
-        let data = JSON.stringify(result)
-        const totalAmountSum = data.entities[0]['cr651_mon_total_amount_sum'];
+        const totalAmountSum = result.entities[0]['cr651_mon_total_amount_sum'];
         console.log(totalAmountSum, 'totalAmountSum')
         if (totalAmountSum != null) {
             formContext.getAttribute('cr651_mon_total_services_amount').setValue(totalAmountSum);
